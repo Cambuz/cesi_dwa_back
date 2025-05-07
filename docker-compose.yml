@@ -1,0 +1,219 @@
+services:
+  db:
+    image: postgres:17
+    container_name: postgres_db
+    restart: always
+    env_file: .env
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "${DB_PORT}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+
+  adminer:
+    image: adminer:latest
+    container_name: adminer
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+
+  mongo:
+    image: mongo:latest
+    container_name: mongo_db
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    command: [ "mongod", "--quiet", "--logpath", "/dev/null" ]
+
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx_gateway
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    ports:
+      - "80:80"
+    depends_on:
+      - user-service
+      - restaurant-service
+      - client-services
+      - livreur-services
+      - articles-services
+      - commande-services
+      - auth-service
+  user-service:
+    build: 
+      context: ./services/user-service
+      dockerfile: Dockerfile
+    container_name: user-service
+    depends_on:
+      - db
+      - mongo
+    env_file: .env
+    environment:
+      - ACCESS_JWT_KEY=${ACCESS_JWT_KEY}
+      - DB_HOST=db
+      - DB_PORT=${DB_PORT}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+    volumes:
+      - ./services/user-service:/app
+      - /app/node_modules
+    ports:
+      - "3000:3000"
+
+  restaurant-service:
+    build: 
+      context: ./services/restaurant-service
+      dockerfile: Dockerfile
+    container_name: restaurant-service
+    depends_on:
+      - db
+      - mongo
+    env_file: .env
+    environment:
+      - DB_HOST=db
+      - DB_PORT=${DB_PORT}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+    volumes:
+      - ./services/restaurant-service:/app
+      - /app/node_modules
+    ports:
+      - "3001:3001"
+
+  client-services:
+    build: 
+      context: ./services/client-services
+      dockerfile: Dockerfile
+    container_name: client-services
+    depends_on:
+      - db
+      - mongo
+    env_file: .env
+    environment:
+      - DB_HOST=db
+      - DB_PORT=${DB_PORT}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+    volumes:
+      - ./services/client-services:/app
+      - /app/node_modules
+    ports:
+      - "3002:3002"
+
+  livreur-services:
+    build: 
+      context: ./services/livreur-services
+      dockerfile: Dockerfile
+    container_name: livreur-services
+    depends_on:
+      - db
+      - mongo
+    env_file: .env
+    environment:
+      - DB_HOST=db
+      - DB_PORT=${DB_PORT}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+    volumes:
+      - ./services/livreur-services:/app
+      - /app/node_modules
+    ports:
+      - "3003:3003"
+
+  articles-services:
+    build: 
+      context: ./services/articles-services
+      dockerfile: Dockerfile
+    container_name: articles-services
+    depends_on:
+      - db
+      - mongo
+    env_file: .env
+    environment:
+      - DB_HOST=db
+      - DB_PORT=${DB_PORT}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+    volumes:
+      - ./services/articles-services:/app
+      - /app/node_modules
+    ports:
+      - "3004:3004"
+
+  commande-services:
+    build: 
+      context: ./services/commande-services
+      dockerfile: Dockerfile
+    container_name: commande-services
+    depends_on:
+      - db
+      - mongo
+    env_file: .env
+    environment:
+      - DB_HOST=db
+      - DB_PORT=${DB_PORT}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+    volumes:
+      - ./services/commande-services:/app
+      - /app/node_modules
+    ports:
+      - "3005:3005"
+  
+  auth-service:
+    build: 
+      context: ./services/auth-service
+      dockerfile: Dockerfile
+    container_name: auth-service
+    ports:
+      - "3006:3006"
+    environment:
+      - ACCESS_JWT_KEY=${ACCESS_JWT_KEY}
+    volumes:
+      - ./services/auth-service:/app
+      - /app/node_modules
+    depends_on:
+      - db
+
+  config-services:
+    build:
+      context: ./services/config-services
+      dockerfile: Dockerfile
+    container_name: config-services
+    depends_on:
+      - db
+      - mongo
+    env_file: .env
+    environment:
+      - DB_HOST=db
+      - DB_PORT=${DB_PORT}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+    volumes:
+      - ./services/config-services:/app
+      - /app/node_modules
+    ports:
+      - "3007:3007"
+
+volumes:
+  postgres_data:
+  mongo_data:

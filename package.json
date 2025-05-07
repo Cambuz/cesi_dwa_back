@@ -1,0 +1,40 @@
+{
+  "name": "repo-global",
+  "private": true,
+  "workspaces": [
+    "services/user-service",
+    "services/restaurant-service",
+    "gateway"
+  ],
+  "scripts": {
+    "dev": "concurrently \"cd services/user-service && npm run dev\" \"cd services/restaurant-service && npm run dev\" \"cd gateway && npm run dev\"",
+    "up": "docker-compose up -d",
+    "dev:full": "npm run up && start http://localhost:8080 && start mongodb://localhost:27017 && start http://localhost:3000/ && start http://localhost:3001/ && start http://localhost:3002/ && start http://localhost:3003/ && start http://localhost:3004/ && start http://localhost:3005/",
+    "down": "docker-compose down",
+    "reset": "npm run down && docker-compose up -d --build",
+    "delete": "docker-compose down -v",
+    "restart": "npm run down && npm run up"
+  },
+  "devDependencies": {
+    "concurrently": "^7.0.0"
+  },
+  "dependencies": {
+    "choco": "^0.2.1",
+    "make": "^0.0.0",
+    "multer": "^1.4.5-lts.2",
+    "save": "^2.9.0"
+  },
+  "version": "1.0.0",
+  "description": "CESI Dépôt projet DWA - Back",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nlecossois/CESI-DWA-BACK.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/nlecossois/CESI-DWA-BACK/issues"
+  },
+  "homepage": "https://github.com/nlecossois/CESI-DWA-BACK#readme"
+}
